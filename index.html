@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Faculty Recognition Scheduler</title>
+
+<style>
+
+body{
+font-family: Arial, sans-serif;
+background:#f5f5f5;
+padding:40px;
+}
+
+.container{
+max-width:900px;
+margin:auto;
+background:white;
+padding:30px;
+border-radius:10px;
+box-shadow:0 10px 25px rgba(0,0,0,0.1);
+}
+
+h1{
+text-align:center;
+margin-bottom:10px;
+}
+
+.week{
+text-align:center;
+font-size:20px;
+font-weight:bold;
+margin-bottom:20px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+th,td{
+border:1px solid #ddd;
+padding:12px;
+text-align:left;
+}
+
+th{
+background:black;
+color:white;
+}
+
+.buttons{
+margin-top:20px;
+display:flex;
+gap:10px;
+justify-content:center;
+}
+
+button{
+padding:10px 18px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+font-size:15px;
+}
+
+.next{
+background:red;
+color:white;
+}
+
+.print{
+background:black;
+color:white;
+}
+
+@media print{
+
+button{
+display:none;
+}
+
+body{
+background:white;
+}
+
+.container{
+box-shadow:none;
+}
+
+}
+
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h1>Faculty Recognition Weekly Schedule</h1>
+
+<div class="week" id="weekDisplay"></div>
+
+<table>
+
+<thead>
+<tr>
+<th>Category</th>
+<th>Department Responsible</th>
+</tr>
+</thead>
+
+<tbody id="scheduleTable"></tbody>
+
+</table>
+
+<div class="buttons">
+
+<button class="next" onclick="nextWeek()">Next Week</button>
+
+<button class="print" onclick="printSchedule()">Print Schedule</button>
+
+</div>
+
+<script>
+
+const departments = [
+"Agricultural & Environmental Engineering",
+"Civil Engineering",
+"Electrical & Electronics Engineering",
+"Industrial Production Engineering",
+"Petroleum Engineering",
+"Automotive Engineering",
+"Mechanical Engineering"
+]
+
+const categories = [
+"Fresher of the Week",
+"Staylite of the Week",
+"Creative of the Week",
+"Scholar of the Week",
+"Executive of the Week",
+"Student Leader of the Week",
+"Sportsman of the Week",
+"Finalist of the Week"
+]
+
+let week = 0
+
+// tomorrow = starting week
+const startDate = new Date()
+startDate.setDate(startDate.getDate() + 1)
+
+function formatDate(date){
+return date.toLocaleDateString("en-US",{
+month:"short",
+day:"numeric",
+year:"numeric"
+})
+}
+
+function generateSchedule(){
+
+const table = document.getElementById("scheduleTable")
+table.innerHTML=""
+
+categories.forEach((category,index)=>{
+
+const dept = departments[(index + week) % departments.length]
+
+const row = `
+<tr>
+<td>${category}</td>
+<td>${dept}</td>
+</tr>
+`
+
+table.innerHTML += row
+
+})
+
+// calculate week range
+let weekStart = new Date(startDate)
+weekStart.setDate(startDate.getDate() + (week * 7))
+
+let weekEnd = new Date(weekStart)
+weekEnd.setDate(weekStart.getDate() + 6)
+
+document.getElementById("weekDisplay").innerText =
+`Week ${week + 1} — ${formatDate(weekStart)} to ${formatDate(weekEnd)}`
+
+}
+
+function nextWeek(){
+
+week++
+generateSchedule()
+
+}
+
+function printSchedule(){
+
+window.print()
+
+}
+
+generateSchedule()
+
+</script>
+</body>
+</html>
