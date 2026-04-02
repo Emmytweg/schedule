@@ -5,6 +5,7 @@
 <title>Faculty Recognition Scheduler</title>
 
 <style>
+
 body{
 font-family: Arial, sans-serif;
 background:#f5f5f5;
@@ -53,7 +54,6 @@ margin-top:20px;
 display:flex;
 gap:10px;
 justify-content:center;
-flex-wrap:wrap;
 }
 
 button{
@@ -64,15 +64,32 @@ cursor:pointer;
 font-size:15px;
 }
 
-.next{background:red;color:white;}
-.print{background:black;color:white;}
-.share{background:#25D366;color:white;}
+.next{
+background:red;
+color:white;
+}
+
+.print{
+background:black;
+color:white;
+}
 
 @media print{
-button{display:none;}
-body{background:white;}
-.container{box-shadow:none;}
+
+button{
+display:none;
 }
+
+body{
+background:white;
+}
+
+.container{
+box-shadow:none;
+}
+
+}
+
 </style>
 
 </head>
@@ -85,20 +102,23 @@ body{background:white;}
 <div class="week" id="weekDisplay"></div>
 
 <table>
+
 <thead>
 <tr>
-<th>Department</th>
-<th>Recognition Category</th>
+<th>Category</th>
+<th>Department Responsible</th>
 </tr>
 </thead>
+
 <tbody id="scheduleTable"></tbody>
+
 </table>
 
 <div class="buttons">
+
 <button class="next" onclick="nextWeek()">Next Week</button>
+
 <button class="print" onclick="printSchedule()">Print Schedule</button>
-<button class="share" onclick="shareWhatsApp()">Share on WhatsApp</button>
-</div>
 
 </div>
 
@@ -111,9 +131,7 @@ const departments = [
 "Industrial Production Engineering",
 "Petroleum Engineering",
 "Automotive Engineering",
-"Mechanical Engineering",
-"Food Technology",
-"Wood and Biomaterial Engineering"
+"Mechanical Engineering"
 ]
 
 const categories = [
@@ -121,14 +139,15 @@ const categories = [
 "Staylite of the Week",
 "Creative of the Week",
 "Scholar of the Week",
+"Executive of the Week",
 "Student Leader of the Week",
 "Sportsman of the Week",
-"Finalist of the Week",
-"Techipreneur of the Week"
+"Finalist of the Week"
 ]
 
 let week = 0
 
+// tomorrow = starting week
 const startDate = new Date()
 startDate.setDate(startDate.getDate() + 1)
 
@@ -140,28 +159,66 @@ year:"numeric"
 })
 }
 
+// Seeded random for consistent weekly randomization
+function seededRandom(seed){
+const x = Math.sin(seed) * 10000
+return x - Math.floor(x)
+}
+
+function getWeekKey(date){
+const year = date.getFullYear()
+const month = date.getMonth()
+const dayOfYear = Math.floor((date - new Date(year, 0, 0)) / 86400000)
+const weekOfYear = Math.floor(dayOfYear / 7)
+return year * 10000 + weekOfYear
+}
+
+function getShuffledDepts(date){
+const weekKey = getWeekKey(date)
+const deptsCopy = [...departments]
+
+// Shuffle using seeded random based on week
+for(let i = deptsCopy.length - 1; i > 0; i--){
+const j = Math.floor(seededRandom(weekKey + i) * (i + 1));
+[deptsCopy[i], deptsCopy[j]] = [deptsCopy[j], deptsCopy[i]]
+}
+
+return deptsCopy
+}
+
 function generateSchedule(){
 
 const table = document.getElementById("scheduleTable")
 table.innerHTML=""
 
-departments.forEach((dept,index)=>{
+// Get the date for this week
+let weekStart = new Date(startDate)
+weekStart.setDate(startDate.getDate() + (week * 7))
 
-const category = categories[(index + week) % categories.length]
+// Get shuffled departments for this week
+const shuffledDepts = getShuffledDepts(weekStart)
+
+// Rotate which 7 categories show this week
+const weeklyCategoriesOffset = week % categories.length
+const weeklyCategories = []
+for(let i = 0; i < 7; i++){
+weeklyCategories.push(categories[(weeklyCategoriesOffset + i) % categories.length])
+}
+
+weeklyCategories.forEach((category,index)=>{
+
+const dept = shuffledDepts[index]
 
 const row = `
 <tr>
-<td>${dept}</td>
 <td>${category}</td>
+<td>${dept}</td>
 </tr>
 `
 
 table.innerHTML += row
 
 })
-
-let weekStart = new Date(startDate)
-weekStart.setDate(startDate.getDate() + (week * 7))
 
 let weekEnd = new Date(weekStart)
 weekEnd.setDate(weekStart.getDate() + 6)
@@ -172,44 +229,20 @@ document.getElementById("weekDisplay").innerText =
 }
 
 function nextWeek(){
+
 week++
 generateSchedule()
+
 }
 
 function printSchedule(){
+
 window.print()
-}
-
-function buildWhatsAppMessage(){
-let message = "*Faculty Recognition Weekly Schedule*%0A%0A"
-
-let weekText = document.getElementById("weekDisplay").innerText
-message += "*" + weekText + "*%0A%0A"
-
-departments.forEach((dept,index)=>{
-
-const category = categories[(index + week) % categories.length]
-
-message += "• " + dept + " — " + category + "%0A"
-
-})
-
-return message
-}
-
-function shareWhatsApp(){
-
-const message = buildWhatsAppMessage()
-
-const url = "https://wa.me/?text=" + message
-
-window.open(url,"_blank")
 
 }
 
 generateSchedule()
 
 </script>
-
 </body>
 </html>
